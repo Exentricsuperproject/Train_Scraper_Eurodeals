@@ -77,13 +77,20 @@ def scrape_ns_live():
                 final_price = live_price
                 print(f"✅ REAL LIVE PRICE: {dest['name']} ({dates['label']}) -> €{final_price}")
             else:
-                # Dynamic variation fallback if API yields empty array
                 base = 25 if "Belgium" in dest["name"] else (35 if "Germany" in dest["name"] else 48)
                 mult = 1.0 if horizon_key == "next_month" else (1.2 if horizon_key == "two_weeks" else 1.4)
                 final_price = int(base * mult)
                 print(f"⚠️ Calculated estimate: {dest['name']} ({dates['label']}) -> €{final_price}")
 
-          search_url = f"https://www.nsinternational.com/en/search?from={ORIGIN_CODE}&to={dest['code']}&outboundDate={dates['dep_date']}&returnDate={dates['arr_date']}&pax=1"
+            # Correctly indented search URL generation
+            search_url = (
+                f"https://www.nsinternational.com/en/search"
+                f"?from={ORIGIN_CODE}&to={dest['code']}"
+                f"&outboundDate={dates['dep_date']}&returnDate={dates['arr_date']}&pax=1"
+            )
+
+            # Append the data card inside the loop
+            output_data[horizon_key].append({
                 "origin": ORIGIN_STATION,
                 "destination": dest["name"],
                 "price": final_price,
