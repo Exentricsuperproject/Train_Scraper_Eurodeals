@@ -35,7 +35,7 @@
         async function loadDeals() {
             try {
                 // Fetch the prices.json file we generated
-                const response = await fetch('prices.json');
+                const response = await fetch('prices.json?t=' + Date.now());
                 const deals = await response.json();
 
                 // 1. Sort cheapest to most expensive
