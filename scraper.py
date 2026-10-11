@@ -1,5 +1,6 @@
 import json
-import requests
+import urllib.request
+import urllib.error
 from datetime import datetime, timedelta
 
 ORIGIN_STATION = "Amsterdam Centraal"
@@ -21,27 +22,28 @@ def get_weekend_dates(weeks_ahead=0):
     }
 
 def fetch_ns_price(origin, destination, date_str):
-    """Directly queries NS International booking API endpoint for lowest fare."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "Accept": "application/json"
-    }
-    
-    # NS International internal price lookup endpoint
+    """Directly queries NS International booking API endpoint using built-in urllib."""
     api_url = f"https://www.nsinternational.com/api/v1/travel-options?from={origin}&to={destination}&date={date_str}&passengers=1"
+    
+    req = urllib.request.Request(
+        api_url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "application/json"
+        }
+    )
 
     try:
-        res = requests.get(api_url, headers=headers, timeout=10)
-        if res.status_code == 200:
-            data = res.json()
-            # Extract all valid fares from returned train options
-            prices = [
-                option["price"]["amount"] 
-                for option in data.get("options", []) 
-                if "price" in option and "amount" in option["price"]
-            ]
-            if prices:
-                return int(min(prices))
+        with urllib.request.urlopen(req, timeout=10) as response:
+            if response.status == 200:
+                data = json.loads(response.read().decode())
+                prices = [
+                    option["price"]["amount"] 
+                    for option in data.get("options", []) 
+                    if "price" in option and "amount" in option["price"]
+                ]
+                if prices:
+                    return int(min(prices))
     except Exception as e:
         print(f"API fetch notice ({destination}): {e}")
 
@@ -69,7 +71,6 @@ def scrape_ns_live():
         print(f"--- Fetching {horizon_key} ({dates['label']}) ---")
 
         for dest in destinations:
-            # Query outbound travel date
             live_price = fetch_ns_price(ORIGIN_CODE, dest["code"], dates["dep_date"])
 
             if live_price:
