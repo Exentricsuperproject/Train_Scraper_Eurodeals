@@ -25,13 +25,24 @@ jobs:
       - name: Run the scraper script
         run: python scraper.py
 
-      - name: Commit and push changes if prices updated
+- name: Commit and push changes if prices updated
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "action@github.com"
           git add prices.json
-          git diff --quiet && git diff --staged --quiet || (
-            git commit -m "Auto-update train prices [skip ci]" &&
-            git pull --rebase origin main &&
-            git push
-          )
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No price changes to commit."
+          else
+            git commit -m "Auto-update train prices [skip ci]" || echo "Nothing to commit"
+            
+            # Pull with rebase, and if a conflict happens on prices.json, automatically accept our latest generated version
+            git pull --rebase origin main -X theirs || {
+              git checkout --theirs prices.json
+              git add prices.json
+              git rebase --continue || git rebase --abort
+            }
+            
+            git push origin main
+          fi
