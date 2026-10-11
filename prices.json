@@ -1,25 +1,25 @@
 [
     {
         "destination": "Antwerp, Belgium",
-        "price": 30,
+        "price": 37,
         "duration": "1h 15m",
         "link": "https://www.thetrainline.com"
     },
     {
         "destination": "D\u00fcsseldorf, Germany",
-        "price": 45,
+        "price": 44,
         "duration": "2h 15m",
         "link": "https://www.thetrainline.com"
     },
     {
         "destination": "Brussels, Belgium",
-        "price": 35,
+        "price": 33,
         "duration": "1h 50m",
         "link": "https://www.thetrainline.com"
     },
     {
         "destination": "Paris, France",
-        "price": 50,
+        "price": 66,
         "duration": "3h 20m",
         "link": "https://www.thetrainline.com"
     }
