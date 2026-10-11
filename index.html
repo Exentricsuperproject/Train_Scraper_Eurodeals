@@ -3,6 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Getaways from NL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen p-6">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-blue-900 tracking-tight">Weekend Train Getaways 🚄</h1>
+            <p class="text-slate-600 mt-1">Cheapest upcoming weekend fares from <span class="font-semibold text-slate-800">Amsterdam Centraal</span></p>
+        </header>
+
+        <!-- Horizon Tabs -->
+        <div class="flex justify-center gap-3 mb-8">
+            <button onclick="switchHorizon('next_weekend')" id="btn-next_weekend" class="px-5 py-2.5 rounded-xl font-semibold shadow-sm transition bg-blue-600 text-white">Next Weekend</button>
+            <button onclick="switchHorizon('two_weeks')" id="btn-two_weeks" class="px-5 py-2.5 rounded-xl font-semibold shadow-sm transition bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">In 2 Weeks</button>
+            <button onclick="switchHorizon('next_month')" id="btn-next_month" class="px-5 py-2.5 rounded-xl font-semibold shadow-sm transition bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">Next Month</button>
+        </div>
+
+        <!-- Cards Container -->
+        <div id="deals-container" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+
+    <script>
+        let allData = {};
+        let currentHorizon = 'next_weekend';
+
+        async function fetchPrices() {
+            try {
+                const response = await fetch('prices.json?t=' + Date.now());
+                allData = await response.json();
+                renderDeals(currentHorizon);
+            } catch (error) {
+                console.error("Failed to load prices:", error);
+            }
+        }
+
+        function switchHorizon(horizon) {
+            currentHorizon = horizon;
+            
+            ['next_weekend', 'two_weeks', 'next_month'].forEach(h => {
+                const btn = document.getElementById(`btn-${h}`);
+                if (h === horizon) {
+                    btn.className = "px-5 py-2.5 rounded-xl font-semibold shadow-sm transition bg-blue-600 text-white";
+                } else {
+                    btn.className = "px-5 py-2.5 rounded-xl font-semibold shadow-sm transition bg-white text-slate-700 hover:bg-slate-100 border border-slate-200";
+                }
+            });
+
+            renderDeals(horizon);
+        }
+
+        function renderDeals(horizon) {
+            const container = document.getElementById('deals-container');
+            container.innerHTML = '';
+            
+            const deals = allData[horizon] || [];
+            
+            deals.forEach(deal => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">${deal.date}</span>
+                            <span class="text-2xl font-black text-slate-900">€${deal.price}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-800 mb-1">${deal.destination}</h3>
+                        <p class="text-xs text-slate-400 mb-1">From: ${deal.origin || 'Amsterdam'}</p>
+                        <p class="text-sm text-slate-500 mb-4">${deal.operator}</p>
+                    </div>
+                    <a href="${deal.link}" target="_blank" class="w-full text-center bg-slate-900 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl transition text-sm">
+                        View Live Tickets &rarr;
+                    </a>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        fetchPrices();
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cheap Train Getaways from the Netherlands</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
