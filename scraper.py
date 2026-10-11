@@ -83,9 +83,7 @@ def scrape_ns_live():
                 final_price = int(base * mult)
                 print(f"⚠️ Calculated estimate: {dest['name']} ({dates['label']}) -> €{final_price}")
 
-            search_url = f"https://www.nsinternational.com/en/tickets#/search?from={ORIGIN_CODE}&to={dest['code']}&outboundDate={dates['dep_date']}&inboundDate={dates['arr_date']}"
-
-            output_data[horizon_key].append({
+          search_url = f"https://www.nsinternational.com/en/search?from={ORIGIN_CODE}&to={dest['code']}&outboundDate={dates['dep_date']}&returnDate={dates['arr_date']}&pax=1"
                 "origin": ORIGIN_STATION,
                 "destination": dest["name"],
                 "price": final_price,
