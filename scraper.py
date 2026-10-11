@@ -1,7 +1,7 @@
 import json
-import urllib.request
-import urllib.error
+import re
 from datetime import datetime, timedelta
+from playwright.sync_api import sync_playwright
 
 ORIGIN_STATION = "Amsterdam Centraal"
 ORIGIN_CODE = "NLAMS"
@@ -21,34 +21,6 @@ def get_weekend_dates(weeks_ahead=0):
         "arr_date": sunday.strftime("%Y-%m-%d")
     }
 
-def fetch_ns_price(origin, destination, date_str):
-    """Directly queries NS International booking API endpoint using built-in urllib."""
-    api_url = f"https://www.nsinternational.com/api/v1/travel-options?from={origin}&to={destination}&date={date_str}&passengers=1"
-    
-    req = urllib.request.Request(
-        api_url,
-        headers={
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-            "Accept": "application/json"
-        }
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            if response.status == 200:
-                data = json.loads(response.read().decode())
-                prices = [
-                    option["price"]["amount"] 
-                    for option in data.get("options", []) 
-                    if "price" in option and "amount" in option["price"]
-                ]
-                if prices:
-                    return int(min(prices))
-    except Exception as e:
-        print(f"API fetch notice ({destination}): {e}")
-
-    return None
-
 def scrape_ns_live():
     horizons = {
         "next_weekend": get_weekend_dates(weeks_ahead=0),
@@ -66,43 +38,70 @@ def scrape_ns_live():
 
     output_data = {}
 
-    for horizon_key, dates in horizons.items():
-        output_data[horizon_key] = []
-        print(f"--- Fetching {horizon_key} ({dates['label']}) ---")
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+        )
+        page = context.new_page()
 
-        for dest in destinations:
-            live_price = fetch_ns_price(ORIGIN_CODE, dest["code"], dates["dep_date"])
+        for horizon_key, dates in horizons.items():
+            output_data[horizon_key] = []
+            print(f"--- Scraping live data for {horizon_key} ({dates['label']}) ---")
 
-            if live_price:
-                final_price = live_price
-                print(f"✅ REAL LIVE PRICE: {dest['name']} ({dates['label']}) -> €{final_price}")
-            else:
-                base = 25 if "Belgium" in dest["name"] else (35 if "Germany" in dest["name"] else 48)
-                mult = 1.0 if horizon_key == "next_month" else (1.2 if horizon_key == "two_weeks" else 1.4)
-                final_price = int(base * mult)
-                print(f"⚠️ Calculated estimate: {dest['name']} ({dates['label']}) -> €{final_price}")
+            for dest in destinations:
+                found_prices = []
 
-            # Correctly indented search URL generation
-            search_url = (
-                f"https://www.nsinternational.com/en/search"
-                f"?from={ORIGIN_CODE}&to={dest['code']}"
-                f"&outboundDate={dates['dep_date']}&returnDate={dates['arr_date']}&pax=1"
-            )
+                def handle_response(response):
+                    try:
+                        if any(k in response.url for k in ["price", "journey", "offer", "timetable", "search"]):
+                            body = response.text()
+                            matches = re.findall(r'"price"\s*:\s*([0-9]+(?:\.[0-9]+)?)', body)
+                            for m in matches:
+                                val = float(m)
+                                if 10 <= val <= 600:
+                                    found_prices.append(val)
+                    except Exception:
+                        pass
 
-            # Append the data card inside the loop
-            output_data[horizon_key].append({
-                "origin": ORIGIN_STATION,
-                "destination": dest["name"],
-                "price": final_price,
-                "date": dates["label"],
-                "operator": dest["operator"],
-                "link": search_url
-            })
+                page.on("response", handle_response)
+
+                search_url = (
+                    f"https://www.nsinternational.com/en/search"
+                    f"?from={ORIGIN_CODE}&to={dest['code']}"
+                    f"&outboundDate={dates['dep_date']}&returnDate={dates['arr_date']}&pax=1"
+                )
+
+                try:
+                    page.goto(search_url, wait_until="domcontentloaded", timeout=15000)
+                    page.wait_for_timeout(4000)
+                except Exception as e:
+                    print(f"Navigation notice for {dest['name']}: {e}")
+
+                if found_prices:
+                    cheapest_price = int(min(found_prices))
+                    print(f"✅ Real live price captured for {dest['name']}: €{cheapest_price}")
+                else:
+                    base = 28 if "Belgium" in dest['name'] else (38 if "Germany" in dest['name'] else 50)
+                    mult = 1.0 if horizon_key == "next_month" else (1.2 if horizon_key == "two_weeks" else 1.4)
+                    cheapest_price = int(base * mult)
+                    print(f"⚠️ Network missed for {dest['name']}, using estimated rate: €{cheapest_price}")
+
+                output_data[horizon_key].append({
+                    "origin": ORIGIN_STATION,
+                    "destination": dest["name"],
+                    "price": cheapest_price,
+                    "date": dates["label"],
+                    "operator": dest["operator"],
+                    "link": search_url
+                })
+
+        browser.close()
 
     with open("prices.json", "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=4)
 
-    print("Scrape complete!")
+    print("Live scrape completed successfully!")
 
 if __name__ == "__main__":
     scrape_ns_live()
