@@ -4,41 +4,41 @@
             "origin": "Amsterdam Centraal",
             "destination": "Antwerp, Belgium",
             "price": 39,
-            "date": "Oct 30 - Nov 01",
+            "date": "Nov 06 - Nov 08",
             "operator": "Eurocity Direct",
-            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=BEANT&outboundDate=2026-10-30&returnDate=2026-11-01&pax=1"
+            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=BEANT&outboundDate=2026-11-06&returnDate=2026-11-08&pax=1"
         },
         {
             "origin": "Amsterdam Centraal",
             "destination": "Brussels, Belgium",
             "price": 39,
-            "date": "Oct 30 - Nov 01",
+            "date": "Nov 06 - Nov 08",
             "operator": "Eurostar / Eurocity Direct",
-            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=BRUSSEL&outboundDate=2026-10-30&returnDate=2026-11-01&pax=1"
+            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=BRUSSEL&outboundDate=2026-11-06&returnDate=2026-11-08&pax=1"
         },
         {
             "origin": "Amsterdam Centraal",
             "destination": "Paris, France",
             "price": 70,
-            "date": "Oct 30 - Nov 01",
+            "date": "Nov 06 - Nov 08",
             "operator": "Eurostar",
-            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=PARIS&outboundDate=2026-10-30&returnDate=2026-11-01&pax=1"
+            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=PARIS&outboundDate=2026-11-06&returnDate=2026-11-08&pax=1"
         },
         {
             "origin": "Amsterdam Centraal",
             "destination": "Cologne, Germany",
             "price": 53,
-            "date": "Oct 30 - Nov 01",
+            "date": "Nov 06 - Nov 08",
             "operator": "ICE International",
-            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=COLOGNE&outboundDate=2026-10-30&returnDate=2026-11-01&pax=1"
+            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=COLOGNE&outboundDate=2026-11-06&returnDate=2026-11-08&pax=1"
         },
         {
             "origin": "Amsterdam Centraal",
             "destination": "London, United Kingdom",
             "price": 70,
-            "date": "Oct 30 - Nov 01",
+            "date": "Nov 06 - Nov 08",
             "operator": "Eurostar",
-            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=LONDON&outboundDate=2026-10-30&returnDate=2026-11-01&pax=1"
+            "link": "https://www.nsinternational.com/en/search?from=NLAMS&to=LONDON&outboundDate=2026-11-06&returnDate=2026-11-08&pax=1"
         }
     ],
     "two_weeks": [
